@@ -1,117 +1,169 @@
 ﻿using System;
-namespace EmployeePayroll
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace expensetracker
 {
-    // Interface
-    interface IPayroll
-    {
-        void CalculateSalary();
-    }
-    // Base Class
-    class Employee
-    {
-        public int EmpId;
-        public string Name;
-
-        public double BasicSalary;
-        public int Leaves;
-        public Employee()
-        {
-            Console.WriteLine("=================================");
-
-            Console.WriteLine(" Employee Payroll Management");
-
-            Console.WriteLine("=================================");
-        }
-        public void AcceptDetails()
-        {
-            Console.Write("Enter Employee ID : ");
-            EmpId = Convert.ToInt32(Console.ReadLine());
-            Console.Write("Enter Employee Name : ");
-            Name = Console.ReadLine();
-            Console.Write("Enter Basic Salary : ");
-            BasicSalary = Convert.ToDouble(Console.ReadLine());
-            Console.Write("Enter Leaves Taken : ");
-            Leaves = Convert.ToInt32(Console.ReadLine());
-        }
-        public void DisplayDetails()
-        {
-            Console.WriteLine("\nEmployee ID : " + EmpId);
-            Console.WriteLine("Employee Name : " + Name);
-            Console.WriteLine("Basic Salary : " + BasicSalary);
-            Console.WriteLine("Leaves Taken : " + Leaves);
-        }
-    }
-    // Full-Time Employee
-    class FullTimeEmployee : Employee, IPayroll
-
-    {
-        public void CalculateSalary()
-        {
-
-            double hra = BasicSalary * 0.40;
-            double da = BasicSalary * 0.20;
-            double pf = BasicSalary * 0.12;
-            double deduction = 0;
-            // First 2 leaves are free
-            if (Leaves > 2)
-            {
-                deduction = (Leaves - 2) * 500;
-            }
-            double netSalary = (BasicSalary + hra + da) - pf - deduction; Console.WriteLine("Employee Type : Full-Time");
-            Console.WriteLine("Leave Deduction : " + deduction);
-            Console.WriteLine("Net Salary : " + netSalary);
-        }
-    }
-    // Part-Time Employee
-    class PartTimeEmployee : Employee, IPayroll
-    {
-        public void CalculateSalary()
-        {
-            double allowance = BasicSalary * 0.15;
-            double deduction = 0;
-
-            // One leave is free
-            if (Leaves > 1)
-            {
-                deduction = (Leaves - 1) * 300;
-            }
-
-            double netSalary = BasicSalary + allowance - deduction;
-            Console.WriteLine("Employee Type : Part-Time");
-            Console.WriteLine("Leave Deduction : " + deduction);
-            Console.WriteLine("Net Salary : " + netSalary);
-        }
-    }
-    class Program
+    internal class Program
     {
         static void Main(string[] args)
         {
-            IPayroll emp;
-            Console.WriteLine("1. Full-Time Employee");
-            Console.WriteLine("2. Part-Time Employee");
-            Console.Write("Enter Choice : ");
-            int choice = Convert.ToInt32(Console.ReadLine());
-            if (choice == 1)
-            {
-                FullTimeEmployee ft = new FullTimeEmployee();
-                ft.AcceptDetails();
-                ft.DisplayDetails();
+            int ch;
+            List<expense> expenses = new List<expense>();
 
-                emp = ft;     // Polymorphism
-                emp.CalculateSalary();
-            }
-            else
+            do
             {
-                PartTimeEmployee pt = new PartTimeEmployee();
+                // Console.Clear();   // Removed so previous output remains visible
 
-                pt.AcceptDetails();
-                pt.DisplayDetails();
-                emp = pt;     // Polymorphism
-                emp.CalculateSalary();
+                Console.WriteLine("=================================================");
+                Console.WriteLine("             EXPENSE TRACKER MODULE              ");
+                Console.WriteLine("=================================================");
+                Console.WriteLine("1. Add Expense");
+                Console.WriteLine("2. View All Expenses");
+                Console.WriteLine("3. View Total Expense");
+                Console.WriteLine("4. Exit");
+                Console.WriteLine("=================================================");
+
+                try
+                {
+                    Console.Write("Enter your choice : ");
+                    ch = Convert.ToInt32(Console.ReadLine());
+
+                    Console.WriteLine();
+
+                    switch (ch)
+                    {
+                        case 1:
+                            {
+                                try
+                                {
+                                    expense e = new expense();
+
+                                    Console.WriteLine("----------- ADD NEW EXPENSE -----------");
+                                    e.accDetails();
+                                    expenses.Add(e);
+
+                                    Console.WriteLine();
+                                    Console.WriteLine("Expense added successfully.");
+                                }
+                                catch (FormatException)
+                                {
+                                    Console.WriteLine("Error : Please enter the valid numeric value.");
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine("Error : " + ex.Message);
+                                }
+                                finally
+                                {
+                                    Console.WriteLine("Expense processing completed.");
+                                }
+                                break;
+                            }
+
+                        case 2:
+                            {
+                                Console.WriteLine("============== ALL EXPENSES ==============");
+
+                                if (expenses.Count == 0)
+                                    Console.WriteLine("No expenses found.");
+                                else
+                                {
+                                    foreach (expense e in expenses)
+                                        e.disDet();
+                                }
+                                break;
+                            }
+
+                        case 3:
+                            {
+                                double t = 0;
+
+                                foreach (expense e in expenses)
+                                    t = t + e.amt;
+
+                                Console.WriteLine("=========================================");
+                                Console.WriteLine("Total Expense = Rs. " + t);
+                                Console.WriteLine("=========================================");
+                                break;
+                            }
+
+                        case 4:
+                            {
+                                Console.WriteLine("=========================================");
+                                Console.WriteLine("Thank You For Using This Expense Tracker");
+                                Console.WriteLine("=========================================");
+                                break;
+                            }
+
+                        default:
+                            {
+                                Console.WriteLine("Invalid Choice.");
+                                break;
+                            }
+                    }
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine("Error : Please enter a valid menu choice.");
+                    ch = 0;
+                }
+
+                if (ch != 4)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Press any key to continue...");
+                    Console.ReadKey();
+                }
+
+            } while (ch != 4);
+        }
+
+        class expense
+        {
+            public int expId;
+            public string category;
+            public double amt;
+            public string paymentmode;
+            public DateTime expDate;
+
+            //Method-1 To accept expense details
+            public void accDetails()
+            {
+                Console.Write("Enter Expense ID            : ");
+                expId = Convert.ToInt32(Console.ReadLine());
+
+                Console.Write("Enter Expense Category      : ");
+                category = Console.ReadLine();
+
+                Console.Write("Enter Expense Amount        : ");
+                amt = Convert.ToDouble(Console.ReadLine());
+
+                if (amt <= 0)
+                {
+                    throw new Exception("Expense must be more than Zero");
+                }
+
+                Console.Write("Enter Payment Mode (Cash/UPI/Card) : ");
+                paymentmode = Console.ReadLine();
+
+                expDate = DateTime.Now;
             }
-            Console.ReadLine();
+
+            //Method-2 To display expense details
+            public void disDet()
+            {
+                Console.WriteLine("=========================================");
+                Console.WriteLine("Expense ID       : " + expId);
+                Console.WriteLine("Category         : " + category);
+                Console.WriteLine("Amount           : Rs. " + amt);
+                Console.WriteLine("Payment Mode     : " + paymentmode);
+                Console.WriteLine("Date             : " + expDate);
+                Console.WriteLine("=========================================");
+                Console.WriteLine();
+            }
         }
     }
 }
-
-
